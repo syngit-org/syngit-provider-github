@@ -63,6 +63,13 @@ func (r *RemoteUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		// does not exists -> deleted
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	log.Log.Info("Reconcile request",
+		"resource", "remoteuser",
+		"namespace", remoteUser.Namespace,
+		"name", remoteUser.Name,
+	)
+
 	remoteUserChecker := RemoteUserChecker{remoteUser: *remoteUser.DeepCopy()}
 
 	var secret corev1.Secret
