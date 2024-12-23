@@ -110,7 +110,7 @@ func (ruc *RemoteUserChecker) testConnection() {
 				condition := metav1.Condition{
 					Type:               "Authenticated",
 					Status:             metav1.ConditionTrue,
-					Reason:             "AuthenticationSuccess",
+					Reason:             "AuthenticationSucceded",
 					Message:            fmt.Sprintf("Authentication was successful with the user %s", user.GetLogin()),
 					LastTransitionTime: metav1.Now(),
 				}
