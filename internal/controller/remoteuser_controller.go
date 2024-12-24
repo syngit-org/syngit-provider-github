@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"maps"
 	"slices"
 
 	"github.com/google/go-github/github"
@@ -32,6 +33,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
@@ -75,7 +77,6 @@ func (r *RemoteUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	var secret corev1.Secret
 	namespacedNameSecret := types.NamespacedName{Namespace: req.Namespace, Name: remoteUser.Spec.SecretRef.Name}
 	if err := r.Get(ctx, namespacedNameSecret, &secret); err != nil {
-		fmt.Println(err)
 		remoteUserChecker.secret = corev1.Secret{}
 	} else {
 		remoteUserChecker.secret = secret
@@ -84,9 +85,26 @@ func (r *RemoteUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	remoteUserChecker.testConnection()
 
 	remoteUser.Status.Conditions = remoteUserChecker.remoteUser.Status.Conditions
-	_ = r.Status().Update(ctx, &remoteUser)
+	_ = r.updateStatus(ctx, req, remoteUserChecker.remoteUser.Status, 2)
 
 	return ctrl.Result{}, nil
+}
+
+func (r *RemoteUserReconciler) updateStatus(ctx context.Context, req ctrl.Request, status syngit.RemoteUserStatus, retryNumber int) error {
+	var remoteUser syngit.RemoteUser
+	if err := r.Get(ctx, req.NamespacedName, &remoteUser); err != nil {
+		return err
+	}
+
+	remoteUser.Status.ConnexionStatus = status.ConnexionStatus
+	remoteUser.Status.Conditions = status.Conditions
+	if err := r.Status().Update(ctx, &remoteUser); err != nil {
+		if retryNumber > 0 {
+			return r.updateStatus(ctx, req, status, retryNumber-1)
+		}
+		return err
+	}
+	return nil
 }
 
 func (ruc *RemoteUserChecker) testConnection() {
@@ -112,6 +130,8 @@ func (ruc *RemoteUserChecker) testConnection() {
 					Message:            err.Error(),
 					LastTransitionTime: metav1.Now(),
 				}
+				ruc.remoteUser.Status.ConnexionStatus.Status = ""
+				ruc.remoteUser.Status.ConnexionStatus.Details = err.Error()
 				ruc.remoteUser.Status.Conditions = typeBasedConditionUpdater(conditions, condition)
 			} else {
 				condition := metav1.Condition{
@@ -121,6 +141,8 @@ func (ruc *RemoteUserChecker) testConnection() {
 					Message:            fmt.Sprintf("Authentication was successful with the user %s", user.GetLogin()),
 					LastTransitionTime: metav1.Now(),
 				}
+				ruc.remoteUser.Status.ConnexionStatus.Details = ""
+				ruc.remoteUser.Status.ConnexionStatus.Status = syngit.GitConnected
 				ruc.remoteUser.Status.Conditions = typeBasedConditionUpdater(conditions, condition)
 			}
 		}
@@ -151,7 +173,7 @@ func typeBasedConditionRemover(conditions []metav1.Condition, typeKind string) [
 func (r *RemoteUserReconciler) findObjectsForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
 	attachedRemoteUsers := &syngit.RemoteUserList{}
 	listOps := &client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(secretRefField, secret.GetName()),
+		FieldSelector: fields.OneTermEqualSelector(syngit.SecretRefField, secret.GetName()),
 		Namespace:     secret.GetNamespace(),
 	}
 	err := r.List(ctx, attachedRemoteUsers, listOps)
@@ -171,20 +193,46 @@ func (r *RemoteUserReconciler) findObjectsForSecret(ctx context.Context, secret 
 	return requests
 }
 
-const (
-	secretRefField = ".spec.secretRef.name"
-)
-
 // SetupWithManager sets up the controller with the Manager.
 func (r *RemoteUserReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &syngit.RemoteUser{}, syngit.SecretRefField, func(rawObj client.Object) []string {
+		// Extract the Secret name from the RemoteUser Spec, if one is provided
+		remoteUser := rawObj.(*syngit.RemoteUser)
+		if remoteUser.Spec.SecretRef.Name == "" {
+			return nil
+		}
+		return []string{remoteUser.Spec.SecretRef.Name}
+	}); err != nil {
+		return err
+	}
+
+	p := predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			oldObject, _ := e.ObjectOld.(*syngit.RemoteUser)
+			newObject, _ := e.ObjectNew.(*syngit.RemoteUser)
+
+			if newObject != nil {
+				if !maps.Equal(oldObject.DeepCopy().Labels, newObject.DeepCopy().Labels) {
+					return true
+				}
+				if !maps.Equal(oldObject.DeepCopy().Annotations, newObject.DeepCopy().Annotations) {
+					return true
+				}
+				if oldObject.DeepCopy().Spec != newObject.Spec {
+					return true
+				}
+			}
+			return false
+		},
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&syngit.RemoteUser{}).
+		For(&syngit.RemoteUser{}, builder.WithPredicates(p)).
 		Named("remoteuser").
 		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.findObjectsForSecret),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		).
-		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		Complete(r)
 }
