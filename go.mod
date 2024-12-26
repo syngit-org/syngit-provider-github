@@ -6,7 +6,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
-	github.com/syngit-org/syngit v0.2.1
+	github.com/syngit-org/syngit v0.3.0
 	golang.org/x/oauth2 v0.21.0
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
