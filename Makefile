@@ -100,11 +100,11 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./cmd/main.go
 
 .PHONY: run-syngit
-run-syngit: helm-install-syngit manifests generate fmt vet ## Run a controller from your host.
+run-syngit: helm-install-syngit manifests generate fmt vet ## Install syngit chart and run the gitlab provider controller.
 	go run ./cmd/main.go
 
 .PHONY: run-onetime
-run-onetime: helm-install-syngit manifests generate fmt vet ## Run a controller from your host.
+run-onetime: helm-install-syngit manifests generate fmt vet ## Install syngit chart and run the gitlab provider controller and uninstall the chart when SIGINT.
 	{ \
 		trap 'make helm-uninstall-syngit exit' SIGINT; \
 		go run cmd/main.go; \

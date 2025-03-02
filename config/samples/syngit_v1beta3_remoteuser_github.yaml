@@ -1,4 +1,4 @@
-apiVersion: syngit.io/v1beta2
+apiVersion: syngit.io/v1beta3
 kind: RemoteUser
 metadata:
   labels:
@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/created-by: syngit
   name: remoteuser-sample
   annotations:
-    syngit.io/associated-remoteuserbinding: "true"
+    syngit.io/remoteuserbinding.managed: "true"
     github.syngit.io/auth.test: "true"
 spec:
   gitBaseDomainFQDN: github.com
