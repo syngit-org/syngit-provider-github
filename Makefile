@@ -99,6 +99,17 @@ build: manifests generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./cmd/main.go
 
+.PHONY: run-syngit
+run-syngit: helm-install-syngit manifests generate fmt vet ## Install syngit chart and run the gitlab provider controller.
+	go run ./cmd/main.go
+
+.PHONY: run-onetime
+run-onetime: helm-install-syngit manifests generate fmt vet ## Install syngit chart and run the gitlab provider controller and uninstall the chart when SIGINT.
+	{ \
+		trap 'make helm-uninstall-syngit exit' SIGINT; \
+		go run cmd/main.go; \
+	}
+
 # If you wish to build the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
@@ -159,6 +170,25 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
+
+##@ Syngit
+
+.PHONY: helm-install-syngit
+helm-install-syngit: ## Install the latest upstream version of the syngit chart
+	helm repo add jetstack https://charts.jetstack.io --force-update
+	helm install \
+		cert-manager jetstack/cert-manager \
+		--namespace cert-manager \
+		--create-namespace \
+		--version v1.16.2 \
+		--set crds.enabled=true || true
+	helm repo add syngit https://syngit-org.github.io/syngit --force-update
+	helm install syngit syngit/syngit -n syngit --create-namespace || true
+
+.PHONY: helm-uninstall-syngit
+helm-uninstall-syngit: ## Uninstall the syngit chart
+	helm uninstall syngit -n syngit || true
+	helm uninstall cert-manager -n cert-manager || true
 
 ##@ Dependencies
 
