@@ -22,7 +22,7 @@ import (
 	"maps"
 
 	"github.com/google/go-github/github"
-	syngit "github.com/syngit-org/syngit/pkg/api/v1beta2"
+	syngit "github.com/syngit-org/syngit/pkg/api/v1beta3"
 	syngitutils "github.com/syngit-org/syngit/pkg/utils"
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
@@ -142,7 +142,7 @@ func (ruc *RemoteUserChecker) testConnection() {
 					LastTransitionTime: metav1.Now(),
 				}
 				ruc.remoteUser.Status.ConnexionStatus.Details = ""
-				ruc.remoteUser.Status.ConnexionStatus.Status = syngit.GitConnected
+				ruc.remoteUser.Status.ConnexionStatus.Status = syngit.GitAuthenticated
 				ruc.remoteUser.Status.Conditions = syngitutils.TypeBasedConditionUpdater(conditions, condition)
 			}
 		}
