@@ -1,6 +1,6 @@
 module github.com/syngit-org/syngit-provider-github
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/google/go-github v17.0.0+incompatible

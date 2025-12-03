@@ -93,27 +93,33 @@ var _ = Describe("Manager", Ordered, func() {
 			cmd := exec.Command("kubectl", "logs", controllerPodName, "-n", namespace)
 			controllerLogs, err := utils.Run(cmd)
 			if err == nil {
-				_, _ = fmt.Fprintf(GinkgoWriter, fmt.Sprintf("Controller logs:\n %s", controllerLogs)) //nolint:govet,staticcheck
+				_, _ = fmt.Fprintf(GinkgoWriter, "%s",
+					fmt.Sprintf("Controller logs:\n %s", controllerLogs)) //nolint:govet,staticcheck
 			} else {
-				_, _ = fmt.Fprintf(GinkgoWriter, fmt.Sprintf("Failed to get Controller logs: %s", err)) //nolint:govet,staticcheck
+				_, _ = fmt.Fprintf(GinkgoWriter, "%s",
+					fmt.Sprintf("Failed to get Controller logs: %s", err)) //nolint:govet,staticcheck
 			}
 
 			By("Fetching Kubernetes events")
 			cmd = exec.Command("kubectl", "get", "events", "-n", namespace, "--sort-by=.lastTimestamp")
 			eventsOutput, err := utils.Run(cmd)
 			if err == nil {
-				_, _ = fmt.Fprintf(GinkgoWriter, fmt.Sprintf("Kubernetes events:\n%s", eventsOutput)) //nolint:govet,staticcheck
+				_, _ = fmt.Fprintf(GinkgoWriter, "%s",
+					fmt.Sprintf("Kubernetes events:\n%s", eventsOutput)) //nolint:govet,staticcheck
 			} else {
-				_, _ = fmt.Fprintf(GinkgoWriter, fmt.Sprintf("Failed to get Kubernetes events: %s", err)) //nolint:govet,staticcheck
+				_, _ = fmt.Fprintf(GinkgoWriter, "%s",
+					fmt.Sprintf("Failed to get Kubernetes events: %s", err)) //nolint:govet,staticcheck
 			}
 
 			By("Fetching curl-metrics logs")
 			cmd = exec.Command("kubectl", "logs", "curl-metrics", "-n", namespace)
 			metricsOutput, err := utils.Run(cmd)
 			if err == nil {
-				_, _ = fmt.Fprintf(GinkgoWriter, fmt.Sprintf("Metrics logs:\n %s", metricsOutput)) //nolint:govet,staticcheck
+				_, _ = fmt.Fprintf(GinkgoWriter, "%s",
+					fmt.Sprintf("Metrics logs:\n %s", metricsOutput)) //nolint:govet,staticcheck
 			} else {
-				_, _ = fmt.Fprintf(GinkgoWriter, fmt.Sprintf("Failed to get curl-metrics logs: %s", err)) //nolint:govet,staticcheck
+				_, _ = fmt.Fprintf(GinkgoWriter, "%s",
+					fmt.Sprintf("Failed to get curl-metrics logs: %s", err)) //nolint:govet,staticcheck
 			}
 
 			By("Fetching controller manager pod description")
