@@ -22,7 +22,7 @@ import (
 	"maps"
 
 	"github.com/google/go-github/github"
-	syngit "github.com/syngit-org/syngit/pkg/api/v1beta2"
+	syngit "github.com/syngit-org/syngit/pkg/api/v1beta3"
 	syngitutils "github.com/syngit-org/syngit/pkg/utils"
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
@@ -32,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -42,7 +42,7 @@ import (
 
 // RemoteUserReconciler reconciles a RemoteUser object
 type RemoteUserReconciler struct {
-	client.Client
+	ctrlClient.Client
 	Scheme *runtime.Scheme
 }
 
@@ -63,7 +63,7 @@ func (r *RemoteUserReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	var remoteUser syngit.RemoteUser
 	if err := r.Get(ctx, req.NamespacedName, &remoteUser); err != nil {
 		// does not exists -> deleted
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return ctrl.Result{}, ctrlClient.IgnoreNotFound(err)
 	}
 
 	log.Log.Info("Reconcile request",
@@ -142,16 +142,16 @@ func (ruc *RemoteUserChecker) testConnection() {
 					LastTransitionTime: metav1.Now(),
 				}
 				ruc.remoteUser.Status.ConnexionStatus.Details = ""
-				ruc.remoteUser.Status.ConnexionStatus.Status = syngit.GitConnected
+				ruc.remoteUser.Status.ConnexionStatus.Status = syngit.GitAuthenticated
 				ruc.remoteUser.Status.Conditions = syngitutils.TypeBasedConditionUpdater(conditions, condition)
 			}
 		}
 	}
 }
 
-func (r *RemoteUserReconciler) findObjectsForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
+func (r *RemoteUserReconciler) findObjectsForSecret(ctx context.Context, secret ctrlClient.Object) []reconcile.Request {
 	attachedRemoteUsers := &syngit.RemoteUserList{}
-	listOps := &client.ListOptions{
+	listOps := &ctrlClient.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(syngit.SecretRefField, secret.GetName()),
 		Namespace:     secret.GetNamespace(),
 	}
@@ -174,7 +174,7 @@ func (r *RemoteUserReconciler) findObjectsForSecret(ctx context.Context, secret 
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *RemoteUserReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &syngit.RemoteUser{}, syngit.SecretRefField, func(rawObj client.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &syngit.RemoteUser{}, syngit.SecretRefField, func(rawObj ctrlClient.Object) []string {
 		// Extract the Secret name from the RemoteUser Spec, if one is provided
 		remoteUser := rawObj.(*syngit.RemoteUser)
 		if remoteUser.Spec.SecretRef.Name == "" {
