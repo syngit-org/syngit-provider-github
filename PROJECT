@@ -13,6 +13,6 @@ resources:
   external: true
   group: syngit
   kind: RemoteUser
-  path: github.com/syngit-org/syngit/api/v1beta2
-  version: v1beta2
+  path: github.com/syngit-org/syngit/api/v1beta3
+  version: v1beta3
 version: "3"
