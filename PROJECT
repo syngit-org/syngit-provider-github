@@ -15,4 +15,11 @@ resources:
   kind: RemoteUser
   path: github.com/syngit-org/syngit/api/v1beta3
   version: v1beta3
+- controller: true
+  domain: io
+  external: true
+  group: syngit
+  kind: RemoteUser
+  path: github.com/syngit-org/syngit/api/v1beta4
+  version: v1beta4
 version: "3"

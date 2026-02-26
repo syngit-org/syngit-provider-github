@@ -22,7 +22,7 @@ import (
 	"maps"
 
 	"github.com/google/go-github/github"
-	syngit "github.com/syngit-org/syngit/pkg/api/v1beta3"
+	syngit "github.com/syngit-org/syngit/pkg/api/v1beta4"
 	syngitutils "github.com/syngit-org/syngit/pkg/utils"
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"

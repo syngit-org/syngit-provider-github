@@ -1,0 +1,19 @@
+apiVersion: syngit.io/v1beta4
+kind: RemoteUser
+metadata:
+  labels:
+    app.kubernetes.io/name: remoteuser
+    app.kubernetes.io/instance: remoteuser-sample
+    app.kubernetes.io/part-of: syngit
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: syngit
+  name: remoteuser-sample
+  annotations:
+    syngit.io/remoteuserbinding.managed: "true"
+    github.syngit.io/auth.test: "true"
+spec:
+  gitBaseDomainFQDN: github.com
+  email: my@email.com
+  secretRef:
+    name: my-github-personal-access-token-secret
+
