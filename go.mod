@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/onsi/ginkgo/v2 v2.29.0
-	github.com/onsi/gomega v1.40.0
+	github.com/onsi/gomega v1.41.0
 	github.com/syngit-org/syngit v0.5.2
 	golang.org/x/oauth2 v0.36.0
 	k8s.io/api v0.35.4
