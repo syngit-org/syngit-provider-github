@@ -3,5 +3,22 @@
   "ignorePaths": [".github/**", ".devcontainer/**", "config/**"],
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "One PR for all workflow action bumps: the pins are SHAs, so an ungrouped run opens a PR per action",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update versions pinned in the Makefile, the workflows and in Go constants annotated with a renovate comment",
+      "managerFilePatterns": ["/(^|/)Makefile$/", "/\\.go$/", "/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": [
+        "(#|//)\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(\\s+versioning=(?<versioning>\\S+))?(\\s+extractVersion=(?<extractVersion>\\S+))?[^\\n]*\\n[^\\n=:]*?[=:]\\s*\"?(?<currentValue>[^\"\\s]+)\"?"
+      ]
+    }
   ]
 }
