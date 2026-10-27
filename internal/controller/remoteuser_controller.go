@@ -22,10 +22,10 @@ import (
 	"maps"
 
 	"github.com/google/go-github/github"
-	syngit "github.com/syngit-org/syngit/pkg/api/v1beta4"
-	syngitutils "github.com/syngit-org/syngit/pkg/utils"
+	syngit "github.com/syngit-org/syngit/pkg/api/v1beta5"
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -111,7 +111,8 @@ func (ruc *RemoteUserChecker) testConnection() {
 	conditions := ruc.remoteUser.Status.DeepCopy().Conditions
 
 	if ruc.remoteUser.Annotations["github.syngit.io/auth.test"] != "true" {
-		ruc.remoteUser.Status.Conditions = syngitutils.TypeBasedConditionRemover(conditions, "Authenticated")
+		meta.RemoveStatusCondition(&conditions, "Authenticated")
+		ruc.remoteUser.Status.Conditions = conditions
 	} else {
 		if len(ruc.secret.Data) != 0 {
 			ctx := context.Background()
@@ -132,7 +133,8 @@ func (ruc *RemoteUserChecker) testConnection() {
 				}
 				ruc.remoteUser.Status.ConnexionStatus.Status = ""
 				ruc.remoteUser.Status.ConnexionStatus.Details = err.Error()
-				ruc.remoteUser.Status.Conditions = syngitutils.TypeBasedConditionUpdater(conditions, condition)
+				meta.SetStatusCondition(&conditions, condition)
+				ruc.remoteUser.Status.Conditions = conditions
 			} else {
 				condition := metav1.Condition{
 					Type:               "Authenticated",
@@ -143,7 +145,8 @@ func (ruc *RemoteUserChecker) testConnection() {
 				}
 				ruc.remoteUser.Status.ConnexionStatus.Details = ""
 				ruc.remoteUser.Status.ConnexionStatus.Status = syngit.GitAuthenticated
-				ruc.remoteUser.Status.Conditions = syngitutils.TypeBasedConditionUpdater(conditions, condition)
+				meta.SetStatusCondition(&conditions, condition)
+				ruc.remoteUser.Status.Conditions = conditions
 			}
 		}
 	}
