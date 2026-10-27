@@ -216,7 +216,7 @@ GOLANGCI_LINT_VERSION ?= v2.15.0
 # renovate: datasource=go depName=github.com/onsi/ginkgo/v2
 GINKGO_VERSION ?= v2.23.4
 # renovate: datasource=github-releases depName=cert-manager/cert-manager
-CERT_MANAGER_VERSION ?= v1.16.2
+CERT_MANAGER_VERSION ?= v1.21.3
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
