@@ -212,7 +212,7 @@ KUSTOMIZE_VERSION ?= v5.5.0
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 ENVTEST_VERSION ?= latest
 # renovate: datasource=go depName=github.com/golangci/golangci-lint/v2
-GOLANGCI_LINT_VERSION ?= v2.5.0
+GOLANGCI_LINT_VERSION ?= v2.15.0
 # renovate: datasource=go depName=github.com/onsi/ginkgo/v2
 GINKGO_VERSION ?= v2.23.4
 # renovate: datasource=github-releases depName=cert-manager/cert-manager
