@@ -214,7 +214,7 @@ ENVTEST_VERSION ?= latest
 # renovate: datasource=go depName=github.com/golangci/golangci-lint/v2
 GOLANGCI_LINT_VERSION ?= v2.15.0
 # renovate: datasource=go depName=github.com/onsi/ginkgo/v2
-GINKGO_VERSION ?= v2.23.4
+GINKGO_VERSION ?= v2.33.1
 # renovate: datasource=github-releases depName=cert-manager/cert-manager
 CERT_MANAGER_VERSION ?= v1.21.3
 
