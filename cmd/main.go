@@ -25,7 +25,7 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	syngitv1beta4 "github.com/syngit-org/syngit/pkg/api/v1beta4"
+	syngitv1beta5 "github.com/syngit-org/syngit/pkg/api/v1beta5"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -48,7 +48,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(syngitv1beta4.AddToScheme(scheme))
+	utilruntime.Must(syngitv1beta5.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
